@@ -1,0 +1,19 @@
+package by.shakhau.ps.order.repository.entity;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Getter
+public enum OrderStatus {
+
+    CREATED(0),
+    PENDING_PAYMENT(1),
+    PAID(2),
+    IN_DELIVERY(3),
+    COMPLETED(4),
+    CANCELLED(5),
+    REFUNDED(6);
+
+    private final int value;
+}
