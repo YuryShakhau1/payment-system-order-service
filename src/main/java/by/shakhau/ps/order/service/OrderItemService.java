@@ -8,8 +8,7 @@ import java.util.UUID;
 
 public interface OrderItemService {
 
-    OrderItem findById(UUID id);
     List<OrderItem> findByOrderId(UUID orderId);
-    Collection<OrderItem> create(UUID orderId, Collection<OrderItem> orderItems);
-    OrderItem update(OrderItem order);
+    void save(Collection<OrderItem> items);
+    void deleteByIds(Collection<UUID> ids);
 }

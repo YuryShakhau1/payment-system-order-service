@@ -27,4 +27,8 @@ public enum OrderStatus {
     public static OrderStatus fromValue(int value) {
         return STATUSES.get(value);
     }
+
+    public static OrderStatus getBeginStatus() {
+        return CREATED;
+    }
 }

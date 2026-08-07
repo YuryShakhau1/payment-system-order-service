@@ -1,20 +1,22 @@
 package by.shakhau.ps.order.service.model;
 
-import by.shakhau.ps.order.repository.entity.AuditableEntity;
-import by.shakhau.ps.order.repository.entity.OrderStatus;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Builder
 @Getter
 @Setter
-public class OrderItem extends AuditableEntity {
+@EqualsAndHashCode(of = { "orderId", "productId", "quantity" }, callSuper = false)
+public class OrderItem {
 
     private UUID id;
-    private OrderStatus status;
-    private UUID itemId;
+    private UUID orderId;
+    private UUID productId;
     private Long quantity;
     private BigDecimal itemPrice;
 }

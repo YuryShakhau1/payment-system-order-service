@@ -2,7 +2,8 @@ package by.shakhau.ps.order.service;
 
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.service.model.Order;
-import by.shakhau.ps.order.service.model.OrderItem;
+import by.shakhau.ps.order.service.model.ProductSelect;
+import by.shakhau.ps.order.service.model.UpdateOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,13 +15,14 @@ import java.util.UUID;
 public interface OrderService {
 
     Order findById(UUID id);
-    List<Order> findByUserId(UUID userId);
+    Order findByIdAndUserId(UUID id, UUID userId);
+    List<Order> findByUserId(UUID userId, boolean withItems);
     Page<Order> findInRange(
             LocalDateTime from, LocalDateTime to,
             Collection<OrderStatus> statuses,
             Boolean deleted,
             Pageable pageable);
-    Order create(Order order);
-    Order update(Order order);
-    void updateDeleted(UUID orderId, Boolean deleted);
+    Order create(UUID userId, List<ProductSelect> selects);
+    Order update(UUID userId, UUID orderId, UpdateOrder updateOrder);
+    void updateDeleted(UUID id, Boolean deleted);
 }
