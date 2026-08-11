@@ -7,10 +7,8 @@ import by.shakhau.ps.order.repository.OrderRepository;
 import by.shakhau.ps.order.repository.entity.OrderEntity;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.repository.specification.OrderSpecifications;
-import by.shakhau.ps.order.service.OrderItemService;
 import by.shakhau.ps.order.service.OrderService;
 import by.shakhau.ps.order.service.exception.ResourceNotFoundException;
-import by.shakhau.ps.order.service.mapper.OrderItemMapper;
 import by.shakhau.ps.order.service.mapper.OrderMapper;
 import by.shakhau.ps.order.service.model.Order;
 import by.shakhau.ps.order.service.model.OrderItem;
@@ -45,10 +43,8 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper mapper;
-    private final OrderItemMapper orderItemMapper;
     private final OrderRepository repository;
     private final ProductClient productClient;
-    private final OrderItemService orderItemService;
 
     @Override
     public Order findById(UUID id) {
@@ -78,12 +74,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<Order> findInRange(
+    public Page<Order> findFiltered(
+            UUID userId,
             LocalDateTime from, LocalDateTime to,
             Collection<OrderStatus> statuses,
             Boolean deleted,
             Pageable pageable) {
         Specification<OrderEntity> specification = Specification.allOf(
+                OrderSpecifications.withUserId(userId),
                 OrderSpecifications.createdAfter(from),
                 OrderSpecifications.createdBefore(to),
                 OrderSpecifications.hasStatuses(statuses),

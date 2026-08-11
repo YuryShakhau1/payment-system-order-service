@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderSpecifications {
@@ -17,6 +18,13 @@ public class OrderSpecifications {
         return (root, query, cb) ->
                 Optional.ofNullable(statuses)
                         .map(s -> root.get("status").in(s))
+                        .orElse(null);
+    }
+
+    public static Specification<OrderEntity> withUserId(UUID userId) {
+        return (root, query, cb) ->
+                Optional.ofNullable(userId)
+                        .map(f -> cb.equal(root.get("userId"), f))
                         .orElse(null);
     }
 

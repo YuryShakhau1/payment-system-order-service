@@ -12,13 +12,4 @@ import java.math.BigDecimal;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface OrderItemMapper {
 
-    OrderItemEntity toEntity(OrderItem order);
-    OrderItem toModel(OrderItemEntity order);
-
-    OrderItem toModel(BigDecimal price, OrderItem orderItem);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    void update(OrderItem source, @MappingTarget OrderItemEntity target);
 }
