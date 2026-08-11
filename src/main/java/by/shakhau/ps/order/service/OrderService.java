@@ -17,7 +17,8 @@ public interface OrderService {
     Order findById(UUID id);
     Order findByIdAndUserId(UUID id, UUID userId);
     List<Order> findByUserId(UUID userId, boolean withItems);
-    Page<Order> findInRange(
+    Page<Order> findFiltered(
+            UUID userId,
             LocalDateTime from, LocalDateTime to,
             Collection<OrderStatus> statuses,
             Boolean deleted,
