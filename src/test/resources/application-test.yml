@@ -1,0 +1,12 @@
+server:
+  port: ${ORDER_SERVICE_PORT:8083}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:${ORDER_SERVICE_DB_PORT:5435}/${ORDER_SERVICE_DB_NAME:order_db}
+    username: ${ORDER_SERVICE_DB_USERNAME:db_username}
+    password: ${ORDER_SERVICE_DB_PASSWORD:db_password}
+
+logging:
+  level:
+    root: INFO

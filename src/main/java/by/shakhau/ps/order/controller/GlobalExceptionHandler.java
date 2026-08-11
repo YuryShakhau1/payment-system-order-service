@@ -5,9 +5,9 @@ import by.shakhau.ps.order.service.exception.ResourceForbiddenException;
 import by.shakhau.ps.order.service.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.method.MethodValidationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,13 +25,8 @@ public class GlobalExceptionHandler {
 
     private static final Map<Class<? extends Exception>, HttpStatus> RESPONSE_STATUSES = new HashMap<>();
 
-    private final boolean localProfile;
-
-    public GlobalExceptionHandler(@Value("${spring.profiles.active}") String activeProfile) {
-        this.localProfile = "local".equals(activeProfile);
-    }
-
     static {
+        RESPONSE_STATUSES.put(AuthorizationDeniedException.class, HttpStatus.FORBIDDEN);
         RESPONSE_STATUSES.put(ResourceForbiddenException.class, HttpStatus.BAD_REQUEST);
         RESPONSE_STATUSES.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
         RESPONSE_STATUSES.put(MethodValidationException.class, HttpStatus.BAD_REQUEST);
@@ -46,10 +41,6 @@ public class GlobalExceptionHandler {
         if (status.is5xxServerError()) {
             log.error("Status: {}, request: {}, exception message: {}",
                     status.value(), request.getRequestURI(), exception.getMessage(), exception);
-            if (localProfile) {
-                return buildErrorResponse(status, exception, request);
-            }
-
             return buildErrorResponse(status, "Server error", request);
         }
 
