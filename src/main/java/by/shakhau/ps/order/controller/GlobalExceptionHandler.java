@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
 
     static {
         RESPONSE_STATUSES.put(AuthorizationDeniedException.class, HttpStatus.FORBIDDEN);
-        RESPONSE_STATUSES.put(ResourceForbiddenException.class, HttpStatus.BAD_REQUEST);
+        RESPONSE_STATUSES.put(ResourceForbiddenException.class, HttpStatus.FORBIDDEN);
         RESPONSE_STATUSES.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
         RESPONSE_STATUSES.put(MethodValidationException.class, HttpStatus.BAD_REQUEST);
         RESPONSE_STATUSES.put(MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST);

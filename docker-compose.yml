@@ -20,7 +20,7 @@ services:
 
   payment-system-order-service:
     image: ghcr.io/yuryshakhau1/payment-system-order-service:latest
-    container_name: core_auth_service
+    container_name: payment_system_order_service
     profiles:
       - docker
     ports:

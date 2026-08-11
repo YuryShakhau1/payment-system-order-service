@@ -88,8 +88,8 @@ class OrderControllerIT extends AbstractIntegrationTest {
         when(strangerClaims.get("roles")).thenReturn(Collections.singletonList("ROLE_USER"));
         when(jwtService.getClaims(any())).thenReturn(strangerClaims);
 
-        mockMvc.perform(get("/orders/{id}", orderId)
-                        .header(org.springframework.http.HttpHeaders.AUTHORIZATION, AUTHORIZATION_HEADER)
+        mockMvc.perform(get("/orders/{id}/me", orderId)
+                        .header(AUTHORIZATION, AUTHORIZATION_HEADER)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }

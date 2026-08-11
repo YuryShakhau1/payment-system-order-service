@@ -35,7 +35,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/orders/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/orders/*/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/orders").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/orders/filtered").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/orders/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/orders/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/orders/**").hasRole("ADMIN")

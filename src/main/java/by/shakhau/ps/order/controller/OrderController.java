@@ -7,6 +7,7 @@ import by.shakhau.ps.order.controller.dto.response.OrderResponse;
 import by.shakhau.ps.order.controller.filter.JwtAuthenticationFilter.UserPrincipal;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.service.OrderService;
+import by.shakhau.ps.order.service.exception.ResourceForbiddenException;
 import by.shakhau.ps.order.service.model.Order;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,13 +43,22 @@ public class OrderController {
     private final OrderService service;
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-    @PostAuthorize("hasRole('ADMIN') or returnObject.body.userId == authentication.principal.id")
-    public ResponseEntity<OrderResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<OrderResponse> findOrderById(@PathVariable UUID id) {
         return ResponseEntity.ok(mapper.toDto(service.findById(id)));
     }
 
+    @GetMapping(value = "/{id}/me", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrderResponse> findCurrentUserOrderById(
+            @AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable UUID id) {
+        Order order = service.findById(id);
+        if (!userPrincipal.getId().equals(order.getUserId())) {
+            throw new ResourceForbiddenException("Resource forbidden");
+        }
+
+        return ResponseEntity.ok(mapper.toDto(order));
+    }
+
     @GetMapping(value = "/filtered", produces = APPLICATION_JSON_VALUE)
-    @PostAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<OrderResponse>> findByFilter(
             @RequestParam(required = false) UUID userId,
             @RequestParam LocalDateTime from,
