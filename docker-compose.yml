@@ -18,5 +18,22 @@ services:
       retries: 5
     restart: always
 
+  payment-system-order-service:
+    image: ghcr.io/yuryshakhau1/payment-system-order-service:latest
+    container_name: core_auth_service
+    profiles:
+      - docker
+    ports:
+      - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
+    environment:
+      - ORDER_SERVICE_PORT=${ORDER_SERVICE_PORT}
+      - ORDER_SERVICE_DB_NAME=${ORDER_SERVICE_DB_NAME}
+      - ORDER_SERVICE_DB_USERNAME=${ORDER_SERVICE_DB_USERNAME}
+      - ORDER_SERVICE_DB_PASSWORD=${ORDER_SERVICE_DB_PASSWORD}
+      - ORDER_SERVICE_DB_PORT=${ORDER_SERVICE_DB_PORT}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+    depends_on:
+      - product-service-db
+
 volumes:
   order_service_postgres_data:
