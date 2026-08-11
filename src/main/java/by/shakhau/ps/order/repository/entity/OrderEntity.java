@@ -1,16 +1,20 @@
 package by.shakhau.ps.order.repository.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "orders")
@@ -26,4 +30,7 @@ public class OrderEntity extends AuditableEntity {
     private OrderStatus status;
     private BigDecimal totalPrice;
     private Boolean deleted;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = { ALL }, mappedBy = "order", orphanRemoval = true)
+    private List<OrderItemEntity> items;
 }

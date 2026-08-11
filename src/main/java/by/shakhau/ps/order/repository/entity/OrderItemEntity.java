@@ -23,13 +23,11 @@ public class OrderItemEntity extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orderId", nullable = false)
-    private OrderEntity order;
-
-    private OrderStatus status;
-    private UUID itemId;
+    private UUID productId;
     private Long quantity;
     private BigDecimal itemPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
 }
