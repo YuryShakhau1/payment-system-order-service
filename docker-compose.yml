@@ -33,7 +33,7 @@ services:
       - ORDER_SERVICE_DB_PORT=${ORDER_SERVICE_DB_PORT}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
     depends_on:
-      - product-service-db
+      - order-service-db
 
 volumes:
   order_service_postgres_data:

@@ -14,10 +14,11 @@ public enum OrderStatus {
     CREATED(0),
     PENDING_PAYMENT(1),
     PAID(2),
-    IN_DELIVERY(3),
-    COMPLETED(4),
-    CANCELLED(5),
-    REFUNDED(6);
+    PAYMENT_FAILED(3),
+    IN_DELIVERY(4),
+    COMPLETED(5),
+    CANCELLED(6),
+    REFUNDED(7);
 
     private final int value;
 

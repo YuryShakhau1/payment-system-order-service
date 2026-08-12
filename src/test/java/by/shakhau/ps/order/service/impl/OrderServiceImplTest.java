@@ -1,8 +1,8 @@
 package by.shakhau.ps.order.service.impl;
 
 import by.shakhau.ps.order.client.ProductClient;
-import by.shakhau.ps.order.client.dto.ProductIdsRequest;
-import by.shakhau.ps.order.client.dto.ProductResponse;
+import by.shakhau.ps.order.client.dto.Product;
+import by.shakhau.ps.order.client.dto.ProductIndices;
 import by.shakhau.ps.order.repository.OrderRepository;
 import by.shakhau.ps.order.repository.entity.OrderEntity;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
@@ -202,8 +202,8 @@ class OrderServiceImplTest {
         updateOrder.setUpdateItems(List.of(updateItem1));
         updateOrder.setCreateItems(List.of(newProductSelect));
 
-        var newProductResponse = new ProductResponse(newProductId, "New Item", BigDecimal.valueOf(50), false);
-        when(productClient.findProducts(any(ProductIdsRequest.class))).thenReturn(List.of(newProductResponse));
+        var newProductResponse = new Product(newProductId, "New Item", BigDecimal.valueOf(50), false);
+        when(productClient.findProducts(any(ProductIndices.class))).thenReturn(List.of(newProductResponse));
 
         when(mapper.toEntity(anyBoolean(), any(Order.class))).thenReturn(orderEntity);
         when(repository.save(orderEntity)).thenReturn(orderEntity);

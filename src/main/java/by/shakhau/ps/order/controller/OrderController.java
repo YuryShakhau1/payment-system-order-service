@@ -4,7 +4,7 @@ import by.shakhau.ps.order.controller.dto.mapper.OrderDtoMapper;
 import by.shakhau.ps.order.controller.dto.request.CreateOrderRequest;
 import by.shakhau.ps.order.controller.dto.request.UpdateOrderRequest;
 import by.shakhau.ps.order.controller.dto.response.OrderResponse;
-import by.shakhau.ps.order.controller.filter.JwtAuthenticationFilter.UserPrincipal;
+import by.shakhau.ps.order.controller.filter.AuthenticationFilter.UserPrincipal;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.service.OrderService;
 import by.shakhau.ps.order.service.exception.ResourceForbiddenException;

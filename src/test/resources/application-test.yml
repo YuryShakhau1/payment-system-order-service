@@ -7,6 +7,9 @@ spring:
     username: ${ORDER_SERVICE_DB_USERNAME:db_username}
     password: ${ORDER_SERVICE_DB_PASSWORD:db_password}
 
+crypto:
+  card-secret-key: ${CARD_SECRET_KEY:fF7vJ3wM3zP6qR8sT1uV4xZ6aB9cD2eF3gH6jK9mN1o=}
+
 logging:
   level:
     root: INFO

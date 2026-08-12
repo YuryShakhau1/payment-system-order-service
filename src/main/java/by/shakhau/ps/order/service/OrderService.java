@@ -25,5 +25,7 @@ public interface OrderService {
             Pageable pageable);
     Order create(UUID userId, List<ProductSelect> selects);
     Order update(UUID userId, UUID orderId, UpdateOrder updateOrder);
+    void updateStatus(Order order, OrderStatus status);
+    void updateStatus(UUID orderId, OrderStatus status);
     void updateDeleted(UUID id, Boolean deleted);
 }

@@ -9,15 +9,15 @@ spring:
       hibernate:
         format_sql: true
 
-  jwt:
-    public-key: "classpath:certs/public_key.pem"
-
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yml
     enabled: true
 
   config:
     import: optional:file:../.env[.properties]
+
+crypto:
+  card-secret-key: ${CARD_SECRET_KEY}
 
 app:
   product-service-url: ${PRODUCT_SERVICE_URL}

@@ -1,8 +1,10 @@
 package by.shakhau.ps.order.service.model;
 
 import by.shakhau.ps.order.repository.entity.OrderStatus;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class Order {

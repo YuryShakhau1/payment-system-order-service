@@ -10,7 +10,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @Getter
-public class ProductResponse {
+public class Product {
 
     private UUID id;
     private String name;

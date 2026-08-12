@@ -1,8 +1,8 @@
 package by.shakhau.ps.order.service.impl;
 
 import by.shakhau.ps.order.client.ProductClient;
-import by.shakhau.ps.order.client.dto.ProductIdsRequest;
-import by.shakhau.ps.order.client.dto.ProductResponse;
+import by.shakhau.ps.order.client.dto.Product;
+import by.shakhau.ps.order.client.dto.ProductIndices;
 import by.shakhau.ps.order.repository.OrderRepository;
 import by.shakhau.ps.order.repository.entity.OrderEntity;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
@@ -16,14 +16,11 @@ import by.shakhau.ps.order.service.model.OrderItemUpdate;
 import by.shakhau.ps.order.service.model.ProductSelect;
 import by.shakhau.ps.order.service.model.UpdateItem;
 import by.shakhau.ps.order.service.model.UpdateOrder;
-import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -90,15 +87,11 @@ public class OrderServiceImpl implements OrderService {
         return repository.findAll(specification, pageable).map(mapper::toModel);
     }
 
-    @Retryable(
-            retryFor = {FeignException.class},
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 2000, multiplier = 2))
     @Transactional
     @Override
     public Order create(UUID userId, List<ProductSelect> selects) {
         List<ProductSelect> mergedSelects = mergeSelectsByProducts(selects);
-        Map<UUID, ProductResponse> productMap = findProducts(mergedSelects);
+        Map<UUID, Product> productMap = findProducts(mergedSelects);
         List<OrderItem> items = createOrderItems(selects, productMap);
 
         var order = Order.builder()
@@ -149,7 +142,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(oic -> oic.getItem().getProductId())
                 .toList());
 
-        Map<UUID, ProductResponse> productMap = findProductsByIds(productIds);
+        Map<UUID, Product> productMap = findProductsByIds(productIds);
 
         createItems.addAll(orderItemUpdates.stream()
                 .map(update -> applyUpdates(productMap, update))
@@ -164,11 +157,24 @@ public class OrderServiceImpl implements OrderService {
         return mapper.toModel(repository.save(mapper.toEntity(order.getDeleted(), order)));
     }
 
-    private ProductSelect applyUpdates(Map<UUID, ProductResponse> productMap, OrderItemUpdate orderItemUpdate) {
+    @Transactional
+    @Override
+    public void updateStatus(Order order, OrderStatus status) {
+        order.setStatus(status);
+        updateStatus(order.getId(), order.getStatus());
+    }
+
+    @Transactional
+    @Override
+    public void updateStatus(UUID orderId, OrderStatus status) {
+        repository.updateStatus(orderId, status);
+    }
+
+    private ProductSelect applyUpdates(Map<UUID, Product> productMap, OrderItemUpdate orderItemUpdate) {
         OrderItem item = orderItemUpdate.getItem();
         UpdateItem updateItem = orderItemUpdate.getUpdateItem();
         if (updateItem.getQuantity() > item.getQuantity()) {
-            ProductResponse product = productMap.get(item.getProductId());
+            Product product = productMap.get(item.getProductId());
             if (product.getDeleted()) {
                 return null;
             }
@@ -185,7 +191,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private List<OrderItem> createOrderItems(
-            List<ProductSelect> selects, Map<UUID, ProductResponse> productMap) {
+            List<ProductSelect> selects, Map<UUID, Product> productMap) {
         return selects.stream()
                 .map(ps -> Optional.ofNullable(productMap.get(ps.getProductId()))
                         .map(product -> {
@@ -233,13 +239,13 @@ public class OrderServiceImpl implements OrderService {
         repository.updateDeleted(id, deleted);
     }
 
-    private Map<UUID, ProductResponse> findProductsByIds(Collection<UUID> productIds) {
-        var productsRequest = new ProductIdsRequest(productIds);
+    private Map<UUID, Product> findProductsByIds(Collection<UUID> productIds) {
+        var productsRequest = new ProductIndices(productIds);
         return productClient.findProducts(productsRequest).stream()
-                .collect(Collectors.toMap(ProductResponse::getId, p -> p));
+                .collect(Collectors.toMap(Product::getId, p -> p));
     }
 
-    private Map<UUID, ProductResponse> findProducts(List<ProductSelect> selects) {
+    private Map<UUID, Product> findProducts(List<ProductSelect> selects) {
         List<UUID> productIds = selects.stream()
                 .map(ProductSelect::getProductId)
                 .toList();

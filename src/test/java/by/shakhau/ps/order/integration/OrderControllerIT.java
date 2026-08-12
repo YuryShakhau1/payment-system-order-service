@@ -1,15 +1,14 @@
 package by.shakhau.ps.order.integration;
 
 import by.shakhau.ps.order.client.ProductClient;
-import by.shakhau.ps.order.client.dto.ProductIdsRequest;
-import by.shakhau.ps.order.client.dto.ProductResponse;
+import by.shakhau.ps.order.client.dto.Product;
+import by.shakhau.ps.order.client.dto.ProductIndices;
 import by.shakhau.ps.order.controller.dto.request.CreateOrderRequest;
 import by.shakhau.ps.order.repository.OrderRepository;
 import by.shakhau.ps.order.repository.entity.OrderEntity;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.service.model.ProductSelect;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +18,15 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static by.shakhau.ps.order.controller.filter.AuthenticationFilter.SESSION_ID_HEADER;
+import static by.shakhau.ps.order.controller.filter.AuthenticationFilter.USER_ID_HEADER;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -80,16 +78,9 @@ class OrderControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnForbiddenWhenUserIsNotOwnerAndNotAdmin() throws Exception {
-        Claims strangerClaims = mock(Claims.class);
-
-        when(strangerClaims.getExpiration()).thenReturn(new Date(System.currentTimeMillis() + 100000));
-        UUID strangerUserId = UUID.randomUUID();
-        when(strangerClaims.getSubject()).thenReturn(strangerUserId.toString());
-        when(strangerClaims.get("roles")).thenReturn(Collections.singletonList("ROLE_USER"));
-        when(jwtService.getClaims(any())).thenReturn(strangerClaims);
-
         mockMvc.perform(get("/orders/{id}/me", orderId)
-                        .header(AUTHORIZATION, AUTHORIZATION_HEADER)
+                        .header(USER_ID_HEADER, UUID.randomUUID())
+                        .header(SESSION_ID_HEADER, UUID.randomUUID())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
@@ -106,7 +97,8 @@ class OrderControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldReturnFilteredOrdersForCurrentUser() throws Exception {
         mockMvc.perform(get("/orders/me/filtered")
-                        .header(AUTHORIZATION, AUTHORIZATION_HEADER)
+                        .header(USER_ID_HEADER, getCurrentUserId())
+                        .header(SESSION_ID_HEADER, UUID.randomUUID())
                         .param("from", "2026-01-01T00:00:00")
                         .param("to", "2026-12-31T23:59:59")
                         .accept(MediaType.APPLICATION_JSON))
@@ -119,14 +111,15 @@ class OrderControllerIT extends AbstractIntegrationTest {
     void shouldCreateOrderSuccessfully() throws Exception {
         UUID productId = UUID.randomUUID();
 
-        ProductResponse productResponse = new ProductResponse(productId, "Test Product", BigDecimal.valueOf(50), false);
-        when(productClient.findProducts(any(ProductIdsRequest.class))).thenReturn(List.of(productResponse));
+        Product product = new Product(productId, "Test Product", BigDecimal.valueOf(50), false);
+        when(productClient.findProducts(any(ProductIndices.class))).thenReturn(List.of(product));
 
         var request = new CreateOrderRequest();
         request.setItems(List.of(new ProductSelect(productId, 2L)));
 
         mockMvc.perform(post("/orders")
-                        .header(AUTHORIZATION, AUTHORIZATION_HEADER)
+                        .header(USER_ID_HEADER, getCurrentUserId())
+                        .header(SESSION_ID_HEADER, UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
