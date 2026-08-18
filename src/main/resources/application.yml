@@ -9,18 +9,31 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST_PORT}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      ack-mode: manual_immediate
+      immediate-stop: true
+
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yml
     enabled: true
 
   config:
-    import: optional:file:../.env[.properties]
+    import: optional:file:.env[.properties]
 
 crypto:
   card-secret-key: ${CARD_SECRET_KEY}
 
 app:
   product-service-url: ${PRODUCT_SERVICE_URL}
+  user-service-url: ${USER_SERVICE_URL}
 
 management:
   endpoint:

@@ -21,6 +21,7 @@ public class Order {
 
     private UUID id;
     private UUID userId;
+    private User user;
     private OrderStatus status;
     private BigDecimal totalPrice;
     private Boolean deleted;

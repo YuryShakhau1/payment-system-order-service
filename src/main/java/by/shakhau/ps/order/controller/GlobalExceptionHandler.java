@@ -1,10 +1,12 @@
 package by.shakhau.ps.order.controller;
 
 import by.shakhau.ps.order.controller.dto.response.ErrorResponse;
-import by.shakhau.ps.order.service.exception.ResourceForbiddenException;
-import by.shakhau.ps.order.service.exception.ResourceNotFoundException;
+import by.shakhau.ps.order.exception.OperationForbiddenException;
+import by.shakhau.ps.order.exception.ResourceForbiddenException;
+import by.shakhau.ps.order.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -25,13 +27,20 @@ public class GlobalExceptionHandler {
 
     private static final Map<Class<? extends Exception>, HttpStatus> RESPONSE_STATUSES = new HashMap<>();
 
+    private final boolean localProfile;
+
     static {
         RESPONSE_STATUSES.put(AuthorizationDeniedException.class, HttpStatus.FORBIDDEN);
+        RESPONSE_STATUSES.put(OperationForbiddenException.class, HttpStatus.FORBIDDEN);
         RESPONSE_STATUSES.put(ResourceForbiddenException.class, HttpStatus.FORBIDDEN);
         RESPONSE_STATUSES.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
         RESPONSE_STATUSES.put(MethodValidationException.class, HttpStatus.BAD_REQUEST);
         RESPONSE_STATUSES.put(MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST);
         RESPONSE_STATUSES.put(HandlerMethodValidationException.class, HttpStatus.BAD_REQUEST);
+    }
+
+    public GlobalExceptionHandler(@Value("${spring.profiles.active}") String activeProfile) {
+        this.localProfile = "local".equals(activeProfile);
     }
 
     @ExceptionHandler(Exception.class)
@@ -41,6 +50,10 @@ public class GlobalExceptionHandler {
         if (status.is5xxServerError()) {
             log.error("Status: {}, request: {}, exception message: {}",
                     status.value(), request.getRequestURI(), exception.getMessage(), exception);
+            if (localProfile) {
+                return buildErrorResponse(status, exception, request);
+            }
+
             return buildErrorResponse(status, "Server error", request);
         }
 

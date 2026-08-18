@@ -30,17 +30,17 @@ public class PaymentController {
     private final PaymentCardDtoMapper paymentCardDtoMapper;
     private final OrderPaymentService orderPaymentService;
 
-    @PostMapping(value = "/cards/{cardId}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @PostMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<OrderResponse> pay(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID orderId,
-            @PathVariable UUID cardId,
+            @RequestParam UUID cardId,
             @RequestParam String cvv) {
         UUID userId = userPrincipal.getId();
         return ResponseEntity.ok(orderMapper.toDto(orderPaymentService.pay(userId, orderId, cardId, cvv)));
     }
 
-    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/external-card", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<OrderResponse> payWithExternalCard(
             @PathVariable UUID orderId,
             @RequestParam String cvv,

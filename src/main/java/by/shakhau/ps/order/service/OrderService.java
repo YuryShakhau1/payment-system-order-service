@@ -1,6 +1,7 @@
 package by.shakhau.ps.order.service;
 
 import by.shakhau.ps.order.repository.entity.OrderStatus;
+import by.shakhau.ps.order.service.model.Actor;
 import by.shakhau.ps.order.service.model.Order;
 import by.shakhau.ps.order.service.model.ProductSelect;
 import by.shakhau.ps.order.service.model.UpdateOrder;
@@ -24,8 +25,7 @@ public interface OrderService {
             Boolean deleted,
             Pageable pageable);
     Order create(UUID userId, List<ProductSelect> selects);
-    Order update(UUID userId, UUID orderId, UpdateOrder updateOrder);
-    void updateStatus(Order order, OrderStatus status);
-    void updateStatus(UUID orderId, OrderStatus status);
-    void updateDeleted(UUID id, Boolean deleted);
+    Order update(UUID userId, UUID id, UpdateOrder updateOrder);
+    Order updateStatus(Order order, OrderStatus status, Actor actor);
+    Order updateStatus(UUID userId, UUID id, OrderStatus status, Actor actor);
 }

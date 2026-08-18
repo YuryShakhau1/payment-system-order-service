@@ -21,6 +21,7 @@ spring:
 
 app:
   product-service-url: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+  user-service-url: ${USER_SERVICE_URL:http://localhost:8080}
 
 management:
   endpoint:

@@ -55,7 +55,7 @@ class PaymentControllerIT extends AbstractIntegrationTest {
         userId = UUID.randomUUID();
         orderId = UUID.randomUUID();
         cardId = UUID.randomUUID();
-        cvv = "123";
+        cvv = UUID.randomUUID().toString().substring(0, 3);
 
         userPrincipal = new UserPrincipal(userId, null);
 
@@ -68,8 +68,9 @@ class PaymentControllerIT extends AbstractIntegrationTest {
         when(orderPaymentService.pay(userId, orderId, cardId, cvv)).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponse);
 
-        mockMvc.perform(post("/orders/{orderId}/pay/cards/{cardId}", orderId, cardId)
+        mockMvc.perform(post("/orders/{orderId}/pay", orderId)
                         .param("cvv", cvv)
+                        .param("cardId", cardId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
                         .with(SecurityMockMvcRequestPostProcessors.user(userPrincipal)))
@@ -89,8 +90,9 @@ class PaymentControllerIT extends AbstractIntegrationTest {
         when(orderPaymentService.pay(orderId, card, cvv)).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponse);
 
-        mockMvc.perform(post("/orders/{orderId}/pay", orderId)
+        mockMvc.perform(post("/orders/{orderId}/pay/external-card", orderId)
                         .param("cvv", cvv)
+                        .param("cardId", cardId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());

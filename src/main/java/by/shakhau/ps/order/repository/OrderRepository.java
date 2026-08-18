@@ -14,23 +14,23 @@ import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID>, JpaSpecificationExecutor<OrderEntity> {
 
-    @EntityGraph(attributePaths = { "items" })
+    @EntityGraph(attributePaths = { "items", "items.productSnapshot" })
     Optional<OrderEntity> findById(UUID id);
 
     @EntityGraph(attributePaths = { "items" })
     Optional<OrderEntity> findByIdAndUserId(UUID id, UUID userId);
 
-    @EntityGraph(attributePaths = { "items" })
+    @EntityGraph(attributePaths = { "items", "items.productSnapshot" })
     List<OrderEntity> findByUserId(UUID userId);
 
     @Query("SELECT o FROM OrderEntity o WHERE o.userId = :userId")
     List<OrderEntity> findByUserIdWithoutItems(UUID userId);
 
-    @Query(value = "UPDATE orders SET status = :status WHERE id = :id", nativeQuery = true)
-    @Modifying
-    void updateStatus(UUID orderId, OrderStatus status);
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE orders SET status = :status WHERE id = :id AND status = :currentStatus", nativeQuery = true)
+    int updateStatus(UUID id, int currentStatus, int status);
 
+    @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE orders SET deleted = :deleted WHERE id = :id", nativeQuery = true)
-    @Modifying
     void updateDeleted(UUID id, Boolean deleted);
 }

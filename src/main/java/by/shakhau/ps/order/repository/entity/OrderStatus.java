@@ -12,13 +12,15 @@ import java.util.stream.Collectors;
 public enum OrderStatus {
 
     CREATED(0),
-    PENDING_PAYMENT(1),
+    PAYMENT_IN_PROCESS(1),
     PAID(2),
     PAYMENT_FAILED(3),
     IN_DELIVERY(4),
     COMPLETED(5),
     CANCELLED(6),
-    REFUNDED(7);
+    DELETED(7),
+    REFUND_IN_PROCESS(8),
+    REFUNDED(9);
 
     private final int value;
 
