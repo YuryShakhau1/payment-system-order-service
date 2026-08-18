@@ -7,7 +7,7 @@ spring:
       on-profile: docker
 
   datasource:
-    url: jdbc:postgresql://postgres:${ORDER_SERVICE_DB_PORT}/${ORDER_SERVICE_DB_NAME}
+    url: jdbc:postgresql://${ORDER_SERVICE_DB_HOST}:${ORDER_SERVICE_DB_PORT}/${ORDER_SERVICE_DB_NAME}
     username: ${ORDER_SERVICE_DB_USERNAME}
     password: ${ORDER_SERVICE_DB_PASSWORD}
 

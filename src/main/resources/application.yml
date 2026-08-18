@@ -21,3 +21,15 @@ crypto:
 
 app:
   product-service-url: ${PRODUCT_SERVICE_URL}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+  endpoints:
+    web:
+      exposure:
+        include: health,info

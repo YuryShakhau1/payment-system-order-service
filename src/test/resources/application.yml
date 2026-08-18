@@ -21,3 +21,15 @@ spring:
 
 app:
   product-service-url: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+  endpoints:
+    web:
+      exposure:
+        include: health,info
