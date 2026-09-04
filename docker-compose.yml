@@ -20,7 +20,7 @@ services:
 
   payment-system-order-service:
     image: ghcr.io/yuryshakhau1/payment-system-order-service:latest
-    container_name: core_auth_service
+    container_name: payment_system_order_service
     profiles:
       - docker
     ports:
@@ -32,8 +32,9 @@ services:
       - ORDER_SERVICE_DB_PASSWORD=${ORDER_SERVICE_DB_PASSWORD}
       - ORDER_SERVICE_DB_PORT=${ORDER_SERVICE_DB_PORT}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
     depends_on:
-      - product-service-db
+      - order-service-db
 
 volumes:
   order_service_postgres_data:

@@ -30,4 +30,8 @@ public class OrderItemEntity extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private OrderEntity order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_snapshot_id")
+    private ProductSnapshotEntity productSnapshot;
 }

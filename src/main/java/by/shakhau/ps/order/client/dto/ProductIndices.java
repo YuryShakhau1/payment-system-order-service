@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ProductIdsRequest {
+public class ProductIndices {
 
     private Collection<UUID> ids;
 }

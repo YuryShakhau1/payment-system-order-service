@@ -12,7 +12,7 @@ import java.util.UUID;
 public class UpdateItem {
 
     @NotNull(message = "Item id must not be empty")
-    private UUID itemId;
+    private UUID id;
 
     @NotNull(message = "Quantity must not be empty")
     @Positive(message = "Quantity must be greater 0")

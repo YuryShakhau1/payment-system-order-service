@@ -2,6 +2,7 @@ package by.shakhau.ps.order.controller.dto.response;
 
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.service.model.OrderItem;
+import by.shakhau.ps.order.service.model.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class OrderResponse {
 
     private UUID id;
     private UUID userId;
+    private User user;
     private OrderStatus status;
     private BigDecimal totalPrice;
     private Boolean deleted;

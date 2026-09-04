@@ -1,19 +1,23 @@
-package by.shakhau.ps.order.client.dto;
+package by.shakhau.ps.order.service.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
-public class ProductResponse {
+@Setter
+public class ProductSnapshot {
 
     private UUID id;
+    private UUID productId;
     private String name;
     private BigDecimal price;
-    private Boolean deleted;
 }

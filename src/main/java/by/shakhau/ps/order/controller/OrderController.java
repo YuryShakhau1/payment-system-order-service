@@ -4,9 +4,11 @@ import by.shakhau.ps.order.controller.dto.mapper.OrderDtoMapper;
 import by.shakhau.ps.order.controller.dto.request.CreateOrderRequest;
 import by.shakhau.ps.order.controller.dto.request.UpdateOrderRequest;
 import by.shakhau.ps.order.controller.dto.response.OrderResponse;
-import by.shakhau.ps.order.controller.filter.JwtAuthenticationFilter.UserPrincipal;
+import by.shakhau.ps.order.controller.filter.AuthenticationFilter.UserPrincipal;
+import by.shakhau.ps.order.exception.ResourceForbiddenException;
 import by.shakhau.ps.order.repository.entity.OrderStatus;
 import by.shakhau.ps.order.service.OrderService;
+import by.shakhau.ps.order.service.model.Actor;
 import by.shakhau.ps.order.service.model.Order;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import static by.shakhau.ps.order.repository.entity.OrderStatus.DELETED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -43,13 +45,22 @@ public class OrderController {
     private final OrderService service;
 
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-    @PostAuthorize("hasRole('ADMIN') or returnObject.body.userId == authentication.principal.id")
-    public ResponseEntity<OrderResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<OrderResponse> findOrderById(@PathVariable UUID id) {
         return ResponseEntity.ok(mapper.toDto(service.findById(id)));
     }
 
+    @GetMapping(value = "/{id}/me", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrderResponse> findCurrentUserOrderById(
+            @AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable UUID id) {
+        Order order = service.findById(id);
+        if (!userPrincipal.getId().equals(order.getUserId())) {
+            throw new ResourceForbiddenException("Resource forbidden");
+        }
+
+        return ResponseEntity.ok(mapper.toDto(order));
+    }
+
     @GetMapping(value = "/filtered", produces = APPLICATION_JSON_VALUE)
-    @PostAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<OrderResponse>> findByFilter(
             @RequestParam(required = false) UUID userId,
             @RequestParam LocalDateTime from,
@@ -74,8 +85,8 @@ public class OrderController {
                 userId, from, to, statuses, deleted, pageable).map(mapper::toDto));
     }
 
-    @GetMapping(value = "/users/{userId}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<OrderResponse>> findByUserId(@PathVariable UUID userId) {
+    @GetMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<OrderResponse>> findByUserId(@RequestParam UUID userId) {
         List<OrderResponse> orders = service.findByUserId(userId, false).stream()
                 .map(mapper::toDto)
                 .toList();
@@ -84,9 +95,20 @@ public class OrderController {
 
     @GetMapping(value = "/me", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<OrderResponse>> findByCurrentUserId(
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(required = false, defaultValue = "false") boolean withItems) {
         UUID userId = userPrincipal.getId();
-        List<OrderResponse> orders = service.findByUserId(userId, false).stream()
+        List<OrderResponse> orders = service.findByUserId(userId, withItems).stream()
+                .map(mapper::toDto)
+                .toList();
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<OrderResponse>> findUserOrders(
+            @RequestParam UUID userId,
+            @RequestParam(required = false, defaultValue = "false") boolean withItems) {
+        List<OrderResponse> orders = service.findByUserId(userId, withItems).stream()
                 .map(mapper::toDto)
                 .toList();
         return ResponseEntity.ok(orders);
@@ -97,29 +119,51 @@ public class OrderController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody CreateOrderRequest request) {
         UUID userId = userPrincipal.getId();
-        OrderResponse order = mapper.toDto(service.create(userId, request.getItems()));
+        OrderResponse order = mapper.toDto(service.create(userId,  mapper.toProductSelects(request.getItems())));
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<OrderResponse> updateCurrentUserOrder(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
+    public ResponseEntity<OrderResponse> updateOrder(
             @PathVariable UUID id,
+            @RequestParam UUID userId,
             @Valid @RequestBody UpdateOrderRequest request) {
-        UUID userId = userPrincipal.getId();
         Order order = service.update(userId, id, mapper.toModel(request));
         return ResponseEntity.ok(mapper.toDto(order));
     }
 
-    @PatchMapping("/{id}/restore")
-    public ResponseEntity<Void> restoreOrder(@PathVariable UUID id) {
-        service.updateDeleted(id, false);
-        return ResponseEntity.noContent().build();
+    @PutMapping(value = "/{id}/me", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrderResponse> updateCurrentUserOrder(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateOrderRequest request) {
+        Order order = service.update(userPrincipal.getId(), id, mapper.toModel(request));
+        return ResponseEntity.ok(mapper.toDto(order));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
-        service.updateDeleted(id, true);
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable UUID id,
+            @RequestParam UUID userId,
+            @RequestParam OrderStatus status) {
+        Order order = service.updateStatus(userId, id, status, Actor.ADMIN);
+        return ResponseEntity.ok(mapper.toDto(order));
+    }
+
+    @PatchMapping("/{id}/me")
+    public ResponseEntity<OrderResponse> updateCurrentUserOrderStatus(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID id,
+            @RequestParam OrderStatus status) {
+        Order order = service.updateStatus(principal.getId(), id, status, Actor.USER);
+        return ResponseEntity.ok(mapper.toDto(order));
+    }
+
+    @DeleteMapping("/{id}/me")
+    public ResponseEntity<Void> deleteCurrentUserOrder(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID id) {
+        service.updateStatus(principal.getId(), id, DELETED, Actor.USER);
         return ResponseEntity.noContent().build();
     }
 }

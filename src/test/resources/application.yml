@@ -12,9 +12,6 @@ spring:
       hibernate:
         format_sql: true
 
-  jwt:
-    public-key: "classpath:certs/public_key.pem"
-
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yml
     enabled: true
@@ -24,3 +21,16 @@ spring:
 
 app:
   product-service-url: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+  user-service-url: ${USER_SERVICE_URL:http://localhost:8080}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+  endpoints:
+    web:
+      exposure:
+        include: health,info

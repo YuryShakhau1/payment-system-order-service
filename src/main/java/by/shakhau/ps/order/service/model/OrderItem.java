@@ -19,4 +19,5 @@ public class OrderItem {
     private UUID productId;
     private Long quantity;
     private BigDecimal itemPrice;
+    private ProductSnapshot productSnapshot;
 }
